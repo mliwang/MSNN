@@ -72,9 +72,7 @@ class MSMfusion(nn.Module):
 
     def getContentSim(self,user2newsDict, index):
         curNews = self.em(index)  # b, content dim
-        # user_news = self.news_pool[index]  # 用户到新闻的矩阵
-        # print(user2newsDict)
-        # print("看看",self.em.size())
+     
 
         attentionnewsF=self.em(user2newsDict)
         batch, userlen, newslen, dim = attentionnewsF.size()
@@ -129,8 +127,7 @@ class MSMfusion(nn.Module):
 
         sim_vec=self.getContentSim(user2newsDict, idx)#user2newsDict b,user_pool_size,news_size    idx: b
         sim_vec=F.softmax(sim_vec,dim=1)#对候选池中所有的user的相似度做sofmax运算保证相似度在0-1范围内  b,user_num
-        #
-        # print("influence_num",influence_num.size())
+       
         # 3.学习用户新闻拓扑结构获取网络舆情初始影响力
         h=self.Anticipation(influence_num) #b,hidden_size
         hn=hidden+ torch.randn_like(h) * self.std
@@ -141,17 +138,13 @@ class MSMfusion(nn.Module):
         pop_t=self.norm2(pop_t)
         pop_t =self.linearmsm2(pop_t)
         pop_t=F.relu(pop_t)
-        
-        # pop_t =F.relu(pop_t)#b,1
-        # pop_t=torch.nn.functional.log_softmax(pop_t, dim=1)
+      
 
         #4.基于协同过滤方法实现可能影响的用户排序  根据极简演替模型计算当前新闻被各个候选用户目前关注的新闻代替的概率    p_(j,u)=sum(Π_(i→j))=sum(lambda_ij *N_j/t_j)=N_j/t_j *sum_ij{sim_ij}
         pro=pop_t * hidden * sim_vec
-        #print('###',pop_gru,pop_t)
+      
         pop_t=(pop_gru+pop_t)/2
-        # pro=F.softmax(pro,dim=1)
-        
-
+     
         return pop_t, pro
    
         
@@ -163,10 +156,9 @@ class MSMfusion(nn.Module):
         ht = torch.zeros(self.num_layers * self.rnn_directions, input_seq.size(0), self.hidden_size).to(self.device)
         if input_seq.ndim < 3:
             input_seq.unsqueeze_(2)
-        # print(input_seq.shape)
+      
         gru_out, hidden = self.gru(input_seq, ht)
-        # print(gru_out.shape)#[64, 201, 512]
-        # print(hidden.shape)#[20, 64, 256]
+       
         if self.rnn_directions * self.num_layers > 1:
             num_layers = self.rnn_directions * self.num_layers
             if self.rnn_directions > 1:
@@ -211,3 +203,4 @@ class Transformer(nn.Module):
         output = self.transformer_encoder(src,mask)
         output = self.decoder(output)
         return output
+
